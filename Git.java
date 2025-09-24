@@ -2,7 +2,7 @@ import java.io.File;
 
 public class Git {
 
-    public static void main(String[] args) {
+    public static void generateFiles() {
         boolean created = true;
         File git = new File("git");
         if (!git.isDirectory()) {
@@ -32,6 +32,19 @@ public class Git {
         } else {
             System.out.println("Git Repository Already Exists");
         }
+    }
+
+    public static void deleteFiles() {
+        File git = new File("git");
+        File objects = new File(git.getPath() + "/objects");
+        File index = new File(git.getPath() + "/index");
+        File HEAD = new File(git.getPath() + "/HEAD");
+        index.delete();
+        HEAD.delete();
+        objects.delete();
+        git.delete();
+        System.out.println("Files have been deleted");
 
     }
+
 }
