@@ -1,5 +1,6 @@
 # git-project-Zidaan
 
+(GP 2.1)
 wassup guys
 Files java class is used
 Makes a method:
@@ -12,3 +13,8 @@ Makes another method:
     deletes the 4 aforementioned files/directories
 
 Both methods are tested in a new Tester.java file
+
+(GP 2.2)
+Added a sha1 hash method, which takes in a file and returns the sha1 hash of its contents.
+I added a testfile.txt to test this with.
+
