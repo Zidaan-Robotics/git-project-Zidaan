@@ -1,5 +1,6 @@
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.MessageDigest;
@@ -7,23 +8,26 @@ import java.security.NoSuchAlgorithmException;
 
 public class Git {
 
+    public static File git = new File("git");
+    public static File objects = new File(git.getPath() + "/objects");
+    public static File index = new File(git.getPath() + "/index");
+    public static File HEAD = new File(git.getPath() + "/HEAD");
+
+
     public static void generateFiles() {
         boolean created = true;
-        File git = new File("git");
         if (!git.isDirectory()) {
             git.mkdir();
             created = false;
         }
 
 
-        File objects = new File(git.getPath() + "/objects");
         if (!objects.isDirectory()) {
             objects.mkdir();
             created = false;
         }
 
-        File index = new File(git.getPath() + "/index");
-        File HEAD = new File(git.getPath() + "/HEAD");
+
         if (!index.isFile()) {
             index.mkdir();
             created = false;
@@ -40,10 +44,6 @@ public class Git {
     }
 
     public static void deleteFiles() {
-        File git = new File("git");
-        File objects = new File(git.getPath() + "/objects");
-        File index = new File(git.getPath() + "/index");
-        File HEAD = new File(git.getPath() + "/HEAD");
         index.delete();
         HEAD.delete();
         objects.delete();
@@ -95,6 +95,17 @@ public class Git {
         catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static void createBlob(File file) throws IOException{
+        String hash = sha1Hash(file);
+        File blob = new File(objects.getPath() + "/" + hash);
+        blob.createNewFile();
+        FileWriter writer = new FileWriter(blob);
+        writer.write(hash);
+        writer.close();
+
+
     }
 
 }
