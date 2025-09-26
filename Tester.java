@@ -11,7 +11,7 @@ public class Tester {
         Git.generateFiles();
         try {
             File f = new File("testfile.txt");
-            System.out.println(Git.sha1Hash(f));
+            Git.createBlob(f);
         } catch (IOException e) {
             System.out.println("somebody sold fr");
         }
