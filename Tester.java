@@ -1,20 +1,69 @@
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 
 public class Tester {
     public static void main(String[] args) {
-        Git.generateFiles();
-        Git.deleteFiles();
-        Git.generateFiles();
-        Git.generateFiles();
-        Git.deleteFiles();
-        Git.generateFiles();
         try {
-            File f = new File("testfile.txt");
-            Git.createBlob(f);
+            clearMakeFiles();
+            deleteTestFiles(3);
+            File[] files = createTestFiles(3);
+            makeBlobs(files);
+            checkBlobs(files);
         } catch (IOException e) {
             System.out.println("somebody sold fr");
         }
 
     }
+
+    public static void clearMakeFiles() throws IOException {
+        Git.generateFiles();
+        Git.deleteFiles();
+        Git.generateFiles();
+        Git.generateFiles();
+        Git.deleteFiles();
+        Git.generateFiles();
+    }
+
+    public static void makeBlobs(File... files) throws IOException {
+        for (File file : files) {
+            Git.createBlob(file);
+        }
+    }
+
+    public static void checkBlobs(File... files) throws IOException {
+        for (File file : files) {
+            if (!(new File(Git.objects + "/" + Git.sha1Hash(file))).exists()) {
+                System.out.println(file.getPath() + " DOES NOT HAVE A BLOB");
+            }
+        }
+    }
+
+    public static File[] createTestFiles(int num) throws IOException {
+        File[] returnList = new File[num];
+        for (int i = 0; i < num; i++) {
+            File f = new File("test" + i + "file.txt");
+            f.createNewFile();
+            StringBuilder txt = new StringBuilder();
+            FileWriter w = new FileWriter(f);
+            for (int j = 0; j < 1000; j++) {
+                txt.append((char) ((int) Math.floor((Math.random() * 256))));
+            }
+            w.write(txt.toString());
+            w.close();
+            returnList[i] = f;
+        }
+        return returnList;
+
+    }
+
+    public static void deleteTestFiles(int num) {
+        for (int i = 0; i < num; i++) {
+            File f = new File("test" + i + "file.txt");
+            if (f.exists()) {
+                f.delete();
+            }
+        }
+    }
+
 }

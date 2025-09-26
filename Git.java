@@ -14,7 +14,7 @@ public class Git {
     public static File HEAD = new File(git.getPath() + "/HEAD");
 
 
-    public static void generateFiles() {
+    public static void generateFiles() throws IOException{
         boolean created = true;
         if (!git.isDirectory()) {
             git.mkdir();
@@ -29,11 +29,11 @@ public class Git {
 
 
         if (!index.isFile()) {
-            index.mkdir();
+            index.createNewFile();
             created = false;
         }
         if (!HEAD.isFile()) {
-            HEAD.mkdir();
+            HEAD.createNewFile();
             created = false;
         }
         if (!created) {
@@ -46,7 +46,15 @@ public class Git {
     public static void deleteFiles() {
         index.delete();
         HEAD.delete();
+        File[] objFiles = objects.listFiles();
+        for (File f : objFiles) {
+            f.delete();
+        }
         objects.delete();
+        objFiles = git.listFiles();
+        for (File f : objFiles) {
+            f.delete();
+        }
         git.delete();
         System.out.println("Files have been deleted");
 
