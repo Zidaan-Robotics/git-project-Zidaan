@@ -8,10 +8,10 @@ public class Tester {
             Git.compression = false;
             clearMakeFiles();
             deleteTestFiles(50);
-            // File[] files = createTestFiles(50);
-            //File[] files = returnTestFiles(3);
-            // makeBlobs(files);
-            // checkBlobs(files);
+            File[] files = createTestFiles(50);
+            // File[] files = returnTestFiles(3);
+            makeBlobs(files);
+            checkBlobs(files);
         } catch (IOException e) {
             System.out.println("somebody sold fr");
         }
