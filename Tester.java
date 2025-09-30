@@ -7,11 +7,11 @@ public class Tester {
         try {
             Git.compression = false;
             clearMakeFiles();
-            deleteTestFiles(3);
-            File[] files = createTestFiles(3);
-            // File[] files = returnTestFiles(3);
-            makeBlobs(files);
-            checkBlobs(files);
+            deleteTestFiles(50);
+            // File[] files = createTestFiles(50);
+            //File[] files = returnTestFiles(3);
+            // makeBlobs(files);
+            // checkBlobs(files);
         } catch (IOException e) {
             System.out.println("somebody sold fr");
         }

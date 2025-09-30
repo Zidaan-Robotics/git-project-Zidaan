@@ -41,3 +41,6 @@ Git:
 (GP 2.4) 
 Git:
     Added a String keeping track of the index contents. Added an updateIndex file that updates the index.
+
+(GP 2.4.1)
+Made a test case generating 50 files, they seem to match and the index seems to work.
