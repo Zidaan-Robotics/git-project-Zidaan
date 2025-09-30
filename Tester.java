@@ -6,10 +6,11 @@ public class Tester {
     public static void main(String[] args) {
         try {
             Git.compression = false;
-            clearMakeFiles();
-            deleteTestFiles(50);
-            File[] files = createTestFiles(50);
-            // File[] files = returnTestFiles(3);
+            // clearMakeFiles();
+            // deleteTestFiles(50);
+            //File[] files = createTestFiles(50);
+            File[] files = returnTestFiles(50);
+            makeBlobs(files);
             makeBlobs(files);
             checkBlobs(files);
         } catch (IOException e) {
