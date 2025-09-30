@@ -1,10 +1,17 @@
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
+import java.util.zip.DeflaterOutputStream;
+import java.util.zip.InflaterOutputStream;
+
 
 public class Git {
 
@@ -12,9 +19,20 @@ public class Git {
     public static File objects = new File(git.getPath() + "/objects");
     public static File index = new File(git.getPath() + "/index");
     public static File HEAD = new File(git.getPath() + "/HEAD");
+    public static boolean compression = false;
+
+    public static String readFile(File file) throws IOException {
+        FileReader r = new FileReader(file);
+        StringBuilder str = new StringBuilder();
+        while (r.ready()) {
+            str.append((char) r.read());
+        }
+        r.close();
+        return str.toString();
+    }
 
 
-    public static void generateFiles() throws IOException{
+    public static void generateFiles() throws IOException {
         boolean created = true;
         if (!git.isDirectory()) {
             git.mkdir();
@@ -60,22 +78,10 @@ public class Git {
 
     }
 
-    public static String sha1Hash(File file) throws IOException {
+    public static String sha1Hash(String input) throws IOException {
         // from geeksforgeeks
-        try {
-            StringBuilder s = new StringBuilder();
-            if (file.exists()) {
-                FileReader f = new FileReader(file);
 
-                while (f.ready()) {
-                    s.append((char) f.read());
-                }
-                f.close();
-
-            }
-            String input = s.toString();
-
-
+        try{
             // getInstance() method is called with algorithm SHA-1
             MessageDigest md = MessageDigest.getInstance("SHA-1");
 
@@ -105,8 +111,13 @@ public class Git {
         }
     }
 
-    public static void createBlob(File file) throws IOException{
-        String hash = sha1Hash(file);
+    public static void createBlob(File file) throws IOException {
+        String hash;
+        if (compression) {
+            hash = sha1Hash(compressAndEncodeBase64(readFile(file)));
+        } else {
+            hash = sha1Hash(readFile(file));
+        }
         File blob = new File(objects.getPath() + "/" + hash);
         blob.createNewFile();
         FileWriter writer = new FileWriter(blob);
@@ -115,5 +126,41 @@ public class Git {
 
 
     }
+
+    // stackoverflow
+    public static String compressAndEncodeBase64(String text) {
+        try {
+            ByteArrayOutputStream os = new ByteArrayOutputStream();
+            try (DeflaterOutputStream dos = new DeflaterOutputStream(os)) {
+                dos.write(text.getBytes());
+            }
+            byte[] bytes = os.toByteArray();
+
+            return new String(Base64.getEncoder().encode(bytes));
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+        return null;
+    }
+
+    public static String decompressB64(String compressedAndEncodedText) {
+        try {
+            byte[] decodedText = Base64.getDecoder().decode(compressedAndEncodedText);
+
+            ByteArrayOutputStream os = new ByteArrayOutputStream();
+            try (OutputStream ios = new InflaterOutputStream(os)) {
+                ios.write(decodedText);
+            }
+            byte[] decompressedBArray = os.toByteArray();
+            return new String(decompressedBArray, StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+        return null;
+    }
+
+    
+
+
 
 }

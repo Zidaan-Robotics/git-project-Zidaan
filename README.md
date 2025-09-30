@@ -28,3 +28,14 @@ Cleaned up the tester:
     added a deleteTestFiles which deletes the testFiles.
 Fixed a bug in 2.1 where index and HEAD were being created as folders, and fixed the delete files method in Git.java.
 
+(GP 2.3.2)
+Tester:
+    Updated to include new methods in the tester
+    Added a returnTestFiles method to allow testing without recreating the test files
+Git:
+    Added Compression and Decompression methods
+    Updates the hash method to take in a String instead, and using the new readFile method to read the File contents to a String
+    Added a variable called compression, which determines whether or not to use compression.
+    
+
+
