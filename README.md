@@ -36,6 +36,8 @@ Git:
     Added Compression and Decompression methods
     Updates the hash method to take in a String instead, and using the new readFile method to read the File contents to a String
     Added a variable called compression, which determines whether or not to use compression.
-    
 
 
+(GP 2.4) 
+Git:
+    Added a String keeping track of the index contents. Added an updateIndex file that updates the index.

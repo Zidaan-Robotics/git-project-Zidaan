@@ -6,10 +6,10 @@ public class Tester {
     public static void main(String[] args) {
         try {
             Git.compression = false;
-            // clearMakeFiles();
-            // deleteTestFiles(3);
-            // File[] files = createTestFiles(3);
-            File[] files = returnTestFiles(3);
+            clearMakeFiles();
+            deleteTestFiles(3);
+            File[] files = createTestFiles(3);
+            // File[] files = returnTestFiles(3);
             makeBlobs(files);
             checkBlobs(files);
         } catch (IOException e) {
@@ -70,7 +70,7 @@ public class Tester {
 
     public static File[] returnTestFiles(int num) {
         File[] returnList = new File[num];
-        for (int i = 0; i < num; i++) { 
+        for (int i = 0; i < num; i++) {
             returnList[i] = new File("test" + i + "file.txt");
         }
         return returnList;

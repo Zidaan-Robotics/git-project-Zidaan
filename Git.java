@@ -18,6 +18,7 @@ public class Git {
     public static File git = new File("git");
     public static File objects = new File(git.getPath() + "/objects");
     public static File index = new File(git.getPath() + "/index");
+    private static String indexString = "";
     public static File HEAD = new File(git.getPath() + "/HEAD");
     public static boolean compression = false;
 
@@ -81,7 +82,7 @@ public class Git {
     public static String sha1Hash(String input) throws IOException {
         // from geeksforgeeks
 
-        try{
+        try {
             // getInstance() method is called with algorithm SHA-1
             MessageDigest md = MessageDigest.getInstance("SHA-1");
 
@@ -123,6 +124,7 @@ public class Git {
         FileWriter writer = new FileWriter(blob);
         writer.write(hash);
         writer.close();
+        updateIndex(file, hash);
 
 
     }
@@ -159,7 +161,17 @@ public class Git {
         return null;
     }
 
-    
+    public static void updateIndex(File file, String hash) throws IOException {
+        FileWriter writer = new FileWriter(index);
+        if (!indexString.equals("")) {
+            indexString += "\n" + hash + " " + file.getName();
+        } else {
+            indexString += hash + " " + file.getName();
+        }
+        writer.write(indexString);
+        writer.close();
+
+    }
 
 
 
