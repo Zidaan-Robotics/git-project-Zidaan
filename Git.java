@@ -11,6 +11,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterOutputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class Git {
@@ -18,7 +20,8 @@ public class Git {
     public static File git = new File("git");
     public static File objects = new File(git.getPath() + "/objects");
     public static File index = new File(git.getPath() + "/index");
-    private static String indexString = "";
+    // gonna use FileName, blob hash
+    private static HashMap<String, String> indexMap = new HashMap<String, String>();
     public static File HEAD = new File(git.getPath() + "/HEAD");
     public static boolean compression = false;
 
@@ -119,6 +122,9 @@ public class Git {
         } else {
             hash = sha1Hash(readFile(file));
         }
+        if (readFile(index).contains(hash + " " + relativePath(file))) {
+            return;
+        }
         File blob = new File(objects.getPath() + "/" + hash);
         blob.createNewFile();
         FileWriter writer = new FileWriter(blob);
@@ -161,14 +167,22 @@ public class Git {
         return null;
     }
 
+    private static String relativePath(File f) {
+        return f.getAbsolutePath().substring(f.getAbsolutePath().indexOf("git-project"));
+    }
+
     public static void updateIndex(File file, String hash) throws IOException {
+        indexMap.put(relativePath(file), hash);
         FileWriter writer = new FileWriter(index);
-        if (!indexString.equals("")) {
-            indexString += "\n" + hash + " " + file.getName();
-        } else {
-            indexString += hash + " " + file.getName();
+        int ctr = 0;
+        for (Map.Entry<String, String> entry : indexMap.entrySet()) {
+            if (ctr == 0) {
+                writer.write(("blob " + entry.getValue() + " " + entry.getKey()));
+                ctr++;
+            } else {
+                writer.write(("\nblob " + entry.getValue() + " " + entry.getKey()));
+            }
         }
-        writer.write(indexString);
         writer.close();
 
     }
