@@ -5,9 +5,11 @@ import java.io.IOException;
 public class Tester {
     public static void main(String[] args) {
         try {
-            clearMakeFiles();
-            deleteTestFiles(3);
-            File[] files = createTestFiles(3);
+            Git.compression = false;
+            // clearMakeFiles();
+            // deleteTestFiles(3);
+            // File[] files = createTestFiles(3);
+            File[] files = returnTestFiles(3);
             makeBlobs(files);
             checkBlobs(files);
         } catch (IOException e) {
@@ -33,9 +35,18 @@ public class Tester {
 
     public static void checkBlobs(File... files) throws IOException {
         for (File file : files) {
-            if (!(new File(Git.objects + "/" + Git.sha1Hash(file))).exists()) {
-                System.out.println(file.getPath() + " DOES NOT HAVE A BLOB");
+            if (Git.compression) {
+                if (!(new File(Git.objects + "/"
+                        + Git.sha1Hash(Git.compressAndEncodeBase64(Git.readFile(file)))))
+                                .exists()) {
+                    System.out.println(file.getPath() + " DOES NOT HAVE A BLOB");
+                }
+            } else {
+                if (!(new File(Git.objects + "/" + Git.sha1Hash(Git.readFile(file)))).exists()) {
+                    System.out.println(file.getPath() + " DOES NOT HAVE A BLOB");
+                }
             }
+
         }
     }
 
@@ -55,6 +66,14 @@ public class Tester {
         }
         return returnList;
 
+    }
+
+    public static File[] returnTestFiles(int num) {
+        File[] returnList = new File[num];
+        for (int i = 0; i < num; i++) { 
+            returnList[i] = new File("test" + i + "file.txt");
+        }
+        return returnList;
     }
 
     public static void deleteTestFiles(int num) {
