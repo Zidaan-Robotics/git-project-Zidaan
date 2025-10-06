@@ -50,3 +50,6 @@ Already completed tasks in previous steps while testing by accident lol
 
 (GP 3.1)
 Replaced indexString with a Hashmap to make changing and removing files easy. Also adjusted the index file to add the word "blob" to the front, and changed the fileName to the relative directory. Also added a method to get the relative directory of a file.
+
+(GP 3.2)
+Added a createTree method to recursively create a tree given a directory name. Returns the hash of the tree. 
