@@ -9,10 +9,10 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
-import java.util.zip.DeflaterOutputStream;
-import java.util.zip.InflaterOutputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.zip.DeflaterOutputStream;
+import java.util.zip.InflaterOutputStream;
 
 
 public class Git {
@@ -177,13 +177,49 @@ public class Git {
         int ctr = 0;
         for (Map.Entry<String, String> entry : indexMap.entrySet()) {
             if (ctr == 0) {
-                writer.write(("blob " + entry.getValue() + " " + entry.getKey()));
+                writer.write((entry.getValue() + " " + entry.getKey()));
                 ctr++;
             } else {
-                writer.write(("\nblob " + entry.getValue() + " " + entry.getKey()));
+                writer.write(("\n" + entry.getValue() + " " + entry.getKey()));
             }
         }
         writer.close();
+
+    }
+
+    public static String createTree(File dir) throws IOException {
+        StringBuilder str = new StringBuilder();
+        File[] files = dir.listFiles();
+        for (File f : files) {
+            if (f.equals(files[0])) {
+                if (f.isFile()) {
+                    createBlob(f);
+                    str.append("blob ").append(indexMap.get(relativePath(f))).append(" ")
+                            .append(relativePath(f));
+                } else if (f.isDirectory()) {
+                    createTree(f);
+                    str.append("tree ").append(indexMap.get(relativePath(f))).append(" ")
+                            .append(relativePath(f));
+                }
+            } else {
+                if (f.isFile()) {
+                    createBlob(f);
+                    str.append("\nblob ").append(indexMap.get(relativePath(f))).append(" ")
+                            .append(relativePath(f));
+                } else if (f.isDirectory()) {
+                    createTree(f);
+                    str.append("\ntree ").append(indexMap.get(relativePath(f))).append(" ")
+                            .append(relativePath(f));
+                }
+            }
+        }
+        String hash = sha1Hash(str.toString());
+        File tree = new File(objects.getPath() + "/" + hash);
+        FileWriter treeWriter = new FileWriter(tree);
+        treeWriter.write(str.toString());
+        indexMap.put(relativePath(dir), sha1Hash(str.toString()));
+        treeWriter.close();
+        return hash;
 
     }
 

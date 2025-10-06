@@ -4,25 +4,29 @@ import java.io.IOException;
 
 public class Tester {
     public static void main(String[] args) {
+        // try {
+        // Git.compression = false;
+        // // clearMakeFiles();
+        // deleteTestFiles(50);
+        // //File[] files = createTestFiles(50);
+        // File[] files = returnTestFiles(50);
+        // makeBlobs(files);
+        // makeBlobs(files);
+        // checkBlobs(files);
+        // } catch (IOException e) {
+        // System.out.println("somebody sold fr");
+        // }
+
         try {
-            Git.compression = false;
-            // clearMakeFiles();
-            // deleteTestFiles(50);
-            //File[] files = createTestFiles(50);
-            File[] files = returnTestFiles(50);
-            makeBlobs(files);
-            makeBlobs(files);
-            checkBlobs(files);
+            clearMakeFiles();
+            File f = new File("testFolder");
+            Git.createTree(f);
         } catch (IOException e) {
-            System.out.println("somebody sold fr");
         }
 
     }
 
     public static void clearMakeFiles() throws IOException {
-        Git.generateFiles();
-        Git.deleteFiles();
-        Git.generateFiles();
         Git.generateFiles();
         Git.deleteFiles();
         Git.generateFiles();
