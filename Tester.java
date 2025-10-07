@@ -19,8 +19,13 @@ public class Tester {
 
         try {
             clearMakeFiles();
-            File f = new File("testFolder");
-            Git.createTree(f);
+            File f = new File("randomFiles/boar/boar2/chicken.txt");
+            File f1 = new File("randomFiles/boar/boar.txt");
+            File f2 = new File("randomFiles/boar/zid.txt");
+            File f3 = new File("randomFiles/file1.txt");
+            File f4 = new File("randomFiles/file2.txt");
+            makeBlobs(f, f1, f2, f3, f4);
+            System.out.println(Git.treeFromIndex());
         } catch (IOException e) {
         }
 

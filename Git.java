@@ -9,11 +9,14 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterOutputStream;
-
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Git {
 
@@ -176,11 +179,13 @@ public class Git {
         FileWriter writer = new FileWriter(index);
         int ctr = 0;
         for (Map.Entry<String, String> entry : indexMap.entrySet()) {
-            if (ctr == 0) {
-                writer.write((entry.getValue() + " " + entry.getKey()));
-                ctr++;
-            } else {
-                writer.write(("\n" + entry.getValue() + " " + entry.getKey()));
+            if (new File(entry.getKey().substring(entry.getKey().indexOf("\\") + 1)).isFile()) {
+                if (ctr == 0) {
+                    writer.write((entry.getValue() + " " + entry.getKey()));
+                    ctr++;
+                } else {
+                    writer.write(("\n" + entry.getValue() + " " + entry.getKey()));
+                }
             }
         }
         writer.close();
@@ -220,6 +225,81 @@ public class Git {
         indexMap.put(relativePath(dir), sha1Hash(str.toString()));
         treeWriter.close();
         return hash;
+
+    }
+
+    private static String subPath(String path) {
+        return path.substring(0, path.lastIndexOf("\\"));
+    }
+
+    private static int slashes(String path) {
+        int ctr = 0;
+        for (int i = 0; i < path.length(); i++) {
+            if (path.charAt(i) == ('\\')) {
+                ctr++;
+            }
+        }
+        return ctr;
+    }
+
+    public static String treeFromIndex() throws IOException {
+        String indexString = readFile(index);
+        String[] workingLines = indexString.split("\n");
+        ArrayList<String> workingList = new ArrayList<String>(Arrays.asList(workingLines));
+        for (int i = 0; i < workingList.size(); i++) {
+            workingList.set(i,
+                    workingList.get(i).substring(41) + " " + workingList.get(i).substring(0, 40));
+        }
+        // Set<String> hashKeys = indexMap.keySet();
+        // for (String i : hashKeys) {
+        // workingList.add(i);
+        // }
+        Collections.sort(workingList);
+        // for (int i = 0; i < workingList.size(); i++) {
+        // System.out.println(workingList.get(i));
+        // }
+        while (workingList.size() > 1) {
+            int maxSlashes = 0;
+            for (int i = 0; i < workingList.size(); i++) {
+                int currentSlashes = slashes(workingList.get(i));
+                if (currentSlashes > maxSlashes) {
+                    maxSlashes = currentSlashes;
+                }
+            }
+            for (int i = 0; i < workingList.size(); i++) {
+                ArrayList<String> runningTotal = new ArrayList<String>();
+                int currentSlashes = slashes(workingList.get(i));
+                if (currentSlashes == maxSlashes) {
+                    if (runningTotal.isEmpty()) {
+                        runningTotal.add(workingList.remove(i));
+                    } else {
+                        if (subPath(runningTotal.get(0)).equals(subPath(workingList.get(i)))) {
+                            runningTotal.add(workingList.remove(i));
+                        }
+                    }
+                } else {
+                    if (!runningTotal.isEmpty()) {
+                        workingList.add(subPath(runningTotal.get(0)));
+                        createTree(new File(subPath(runningTotal.get(0)
+                                .substring(subPath(runningTotal.get(0)).indexOf("\\") + 1))));
+                        runningTotal = new ArrayList<String>();
+                        Collections.sort(workingList);
+                        i--;
+                    }
+                }
+                if (i == workingList.size() - 1) {
+                    if (!runningTotal.isEmpty()) {
+                        workingList.add(subPath(runningTotal.get(0)));
+                        createTree(new File(subPath(runningTotal.get(0)
+                                .substring(subPath(runningTotal.get(0)).indexOf("\\") + 1))));
+                        Collections.sort(workingList);
+                    }
+                }
+            }
+        }
+        String finalThing = "tree " + indexMap.get(workingList.get(0)) + " " + workingList.get(0);
+        return sha1Hash(finalThing);
+
 
     }
 
