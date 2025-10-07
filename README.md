@@ -53,3 +53,11 @@ Replaced indexString with a Hashmap to make changing and removing files easy. Al
 
 (GP 3.2)
 Added a createTree method to recursively create a tree given a directory name. Returns the hash of the tree. 
+
+(GP 3.3)
+Fixed problems with updateIndex:
+    was adding trees to index
+Fixed problem with createTree:
+    didn't return tree's hash
+
+Added a createTree from index which goes through the index and creates all the necessary trees. Added new test files, but tester isn't super clean rn
