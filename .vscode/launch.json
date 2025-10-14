@@ -6,6 +6,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "GitWrapperTester",
+            "request": "launch",
+            "mainClass": "GitWrapperTester",
+            "projectName": ""
+        },
+        {
+            "type": "java",
             "name": "Tester",
             "request": "launch",
             "mainClass": "Tester",
