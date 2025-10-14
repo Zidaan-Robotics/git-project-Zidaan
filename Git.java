@@ -8,15 +8,15 @@ import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.zip.DeflaterOutputStream;
-import java.util.zip.InflaterOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.zip.DeflaterOutputStream;
+import java.util.zip.InflaterOutputStream;
 
 public class Git {
 
@@ -131,7 +131,7 @@ public class Git {
         File blob = new File(objects.getPath() + "/" + hash);
         blob.createNewFile();
         FileWriter writer = new FileWriter(blob);
-        writer.write(hash);
+        writer.write(readFile(file));
         writer.close();
         updateIndex(file, hash);
 
@@ -171,7 +171,8 @@ public class Git {
     }
 
     private static String relativePath(File f) {
-        return f.getAbsolutePath().substring(f.getAbsolutePath().indexOf("git-project"));
+        // return f.getAbsolutePath().substring(f.getAbsolutePath().indexOf("git-project"));
+        return f.getPath();
     }
 
     public static void updateIndex(File file, String hash) throws IOException {
@@ -179,7 +180,7 @@ public class Git {
         FileWriter writer = new FileWriter(index);
         int ctr = 0;
         for (Map.Entry<String, String> entry : indexMap.entrySet()) {
-            if (new File(entry.getKey().substring(entry.getKey().indexOf("\\") + 1)).isFile()) {
+            if (new File(entry.getKey()).isFile()) {
                 if (ctr == 0) {
                     writer.write((entry.getValue() + " " + entry.getKey()));
                     ctr++;
@@ -193,12 +194,14 @@ public class Git {
     }
 
     public static String createTree(File dir) throws IOException {
+        // fix all paths to not include git-proejct
         StringBuilder str = new StringBuilder();
         File[] files = dir.listFiles();
         for (File f : files) {
             if (f.equals(files[0])) {
                 if (f.isFile()) {
                     createBlob(f);
+
                     str.append("blob ").append(indexMap.get(relativePath(f))).append(" ")
                             .append(relativePath(f));
                 } else if (f.isDirectory()) {
@@ -258,6 +261,20 @@ public class Git {
         // for (int i = 0; i < workingList.size(); i++) {
         // System.out.println(workingList.get(i));
         // }
+        if (workingList.size() == 1) {
+            createTree(new File(subPath(workingList.get(0))));
+            String[] splitStr = workingList.get(0).split(" ");
+            String finalThing = "blob " + indexMap.get(splitStr[0]) + " " + splitStr[0];
+            String finalHash = sha1Hash(finalThing);
+            File finalFile = new File("git/objects/" + finalHash);
+            finalFile.createNewFile();
+            FileWriter w = new FileWriter(finalFile);
+
+            w.write("blob " + indexMap.get(splitStr[0]) + " " + splitStr[0]);
+            w.close();
+            return finalHash;
+        }
+
         while (workingList.size() > 1) {
             int maxSlashes = 0;
             for (int i = 0; i < workingList.size(); i++) {
@@ -280,8 +297,7 @@ public class Git {
                 } else {
                     if (!runningTotal.isEmpty()) {
                         workingList.add(subPath(runningTotal.get(0)));
-                        createTree(new File(subPath(runningTotal.get(0)
-                                .substring(subPath(runningTotal.get(0)).indexOf("\\") + 1))));
+                        createTree(new File(subPath(runningTotal.get(0))));
                         runningTotal = new ArrayList<String>();
                         Collections.sort(workingList);
                         i--;
@@ -290,17 +306,80 @@ public class Git {
                 if (i == workingList.size() - 1) {
                     if (!runningTotal.isEmpty()) {
                         workingList.add(subPath(runningTotal.get(0)));
-                        createTree(new File(subPath(runningTotal.get(0)
-                                .substring(subPath(runningTotal.get(0)).indexOf("\\") + 1))));
+                        createTree(new File(subPath(runningTotal.get(0))));
                         Collections.sort(workingList);
                     }
                 }
             }
         }
         String finalThing = "tree " + indexMap.get(workingList.get(0)) + " " + workingList.get(0);
-        return sha1Hash(finalThing);
+        String finalHash = sha1Hash(finalThing);
+        File finalFile = new File("git/objects/" + finalHash);
+        finalFile.createNewFile();
+        FileWriter w = new FileWriter(finalFile);
+        w.write("tree " + indexMap.get(workingList.get(0)) + " " + workingList.get(0));
+        w.close();
+
+        return finalHash;
 
 
+    }
+
+    public static String makeCommit(String author, String message) throws IOException {
+        StringBuilder commitString = new StringBuilder();
+        // tree
+        commitString.append("tree: ");
+        commitString.append(treeFromIndex());
+        commitString.append("\n");
+
+        // parent
+        try {
+            StringBuilder head = new StringBuilder();
+            FileReader r = new FileReader("git/HEAD");
+            while (r.ready()) {
+                head.append((char) r.read());
+            }
+            r.close();
+            if (!head.isEmpty()) {
+                commitString.append("parent: ");
+                commitString.append(head);
+                commitString.append("\n");
+            }
+        } catch (IOException e) {
+            System.out.println("aight bro just run the initializeRepo() already");
+        }
+
+        // author
+        commitString.append("author: ");
+        commitString.append(author);
+        commitString.append("\n");
+
+        // date
+        Date date = new Date();
+        commitString.append("date: ");
+        commitString.append(date);
+        commitString.append("\n");
+
+        // message
+        commitString.append("message: ");
+        commitString.append(message);
+
+        String hash = sha1Hash(commitString.toString());
+        File commitObj = new File("git/objects/" + hash);
+        try {
+            commitObj.createNewFile();
+            FileWriter headWriter = new FileWriter("git/HEAD");
+            headWriter.write(hash);
+            headWriter.close();
+            FileWriter commitWriter = new FileWriter(commitObj);
+            commitWriter.write(commitString.toString());
+            commitWriter.close();
+            return hash;
+        } catch (IOException e) {
+            System.out.println("idk man it's joever");
+        }
+
+        return null;
     }
 
 

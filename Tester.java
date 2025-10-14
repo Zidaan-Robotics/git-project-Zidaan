@@ -25,6 +25,10 @@ public class Tester {
             File f3 = new File("randomFiles/file1.txt");
             File f4 = new File("randomFiles/file2.txt");
             makeBlobs(f, f1, f2, f3, f4);
+            File f5 = new File("randomFiles/boar/monkey.txt");
+            System.out.println(Git.treeFromIndex());
+            f5.createNewFile();
+            makeBlobs(f5);
             System.out.println(Git.treeFromIndex());
         } catch (IOException e) {
         }
